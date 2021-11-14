@@ -1,0 +1,9 @@
+{
+    "shell-version": [
+        "40", "41"
+    ],
+    "uuid": "sane-airplane-mode@kippi",
+    "name": "Sane Airplane Mode",
+    "description": "Make airplane mode sane again! This extension gives you better control over the airplane mode.",
+    "url": "https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode"
+}

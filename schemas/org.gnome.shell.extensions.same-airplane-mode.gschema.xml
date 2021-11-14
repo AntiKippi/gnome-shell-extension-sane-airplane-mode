@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="nls1729-extensions">
+  <schema path="/org/gnome/shell/extensions/sane-airplane-mode/" id="org.gnome.shell.extensions.sane-airplane-mode">
+    <key type="b" name="enable-wifi">
+      <default>false</default>
+      <summary>Enable Wi-Fi</summary>
+      <description>If set, Wi-Fi will be automatically turned on when airplane mode is disabled.</description>
+    </key>
+    <key type="b" name="enable-bluetooth">
+      <default>false</default>
+      <summary>Enable Bluetooth</summary>
+      <description>If set, Bluetooth will be automatically turned on when airplane mode is disabled.</description>
+    </key>
+  </schema>
+</schemalist>
