@@ -15,6 +15,8 @@ Hint: With this extension you can also turn off the annoying "Bluetooth gets tur
 
 ## Installation
 
+You can install this extension via the GNOME extension site ([https://extensions.gnome.org/extension/4604/](https://extensions.gnome.org/extension/4604/)) or via git.
+
 Installation via git is performed by cloning the repo into your local gnome-shell extensions directory (usually ~/.local/share/gnome-shell/extensions/):
 
     $ git clone https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode.git <extensions-dir>/sane-airplane-mode@kippi
