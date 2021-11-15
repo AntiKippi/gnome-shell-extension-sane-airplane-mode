@@ -5,7 +5,7 @@ Hint: With this extension you can also turn off the annoying "Bluetooth gets tur
 
 ## Known limitations
 
- - When in airplane mode, turning on Bluetooth is indistinguishable from turning off airplane mode and will be treated accordingly.  
+ - When in airplane mode, I found no way to distinguish turning on Bluetooth from turning off airplane mode (Any help is welcome here).  
    This means when you turn on Bluetooth when in airplane mode the following happens:
    - When "Enable Wi-Fi" is enabled Wi-Fi gets enabled even tough you only wanted to toggle Bluetooth.
    - When "Enable Bluetooth" is disabled Bluetooth won't turn on. 

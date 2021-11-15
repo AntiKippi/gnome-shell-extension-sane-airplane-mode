@@ -26,7 +26,7 @@ var SettingsSchema = getSchema();
 
 function init() { }
 
-const App = GObject.registerClass(class Settings extends Gtk.Grid  {
+const App = GObject.registerClass(class Settings extends GObject.Object  { 
     _init() {
         this.main = new Gtk.Grid({
             margin_top: 10,
