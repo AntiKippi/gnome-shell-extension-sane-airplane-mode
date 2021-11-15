@@ -1,7 +1,5 @@
 const GLib   = imports.gi.GLib;
 const NM     = imports.gi.NM;
-const Lang   = imports.lang;
-//const Main   = imports.ui.main;
 const Rfkill = imports.ui.status.rfkill;
 
 const Gettext = imports.gettext;
@@ -24,93 +22,93 @@ const setTimeout = (func, millis) => {
 };
 
 
-const SaneAirplaneMode = new Lang.Class({
-    Name: 'SaneAirplaneMode',
+const SaneAirplaneMode = class SaneAirplaneMode {
+    constructor() {
+        this._init();
+    }
 
-    destroy: function () {
-        this._disconnectSettings();
-        this._disconnectAirplaneHandler();
-    },
-
-    _init: async function() {
+    async _init() {
         this._loadSettings();
 
-        //Create a NetworkManager client
+        // Create a NetworkManager client
         this._client = await NM.Client.new_async(null);
 
-        //Get a RfkillManager instance
+        // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
-        
-        //Connect to the airplane-mode-changed signal
+
+        // Connect to the airplane-mode-changed signal
         this._airplaneHandlerId = this._rfkillManager.connect(
-            'airplane-mode-changed', 
-            Lang.bind(this, this._handleAirplaneModeChange)
+            'airplane-mode-changed',
+            this._handleAirplaneModeChange.bind(this)
         );
-    },
+    }
 
-    _handleAirplaneModeChange: function() {
-        if(!this._rfkillManager.airplaneMode                     //We have a change and airplane mode is off, hence it must have been disabled
-            && !this._rfkillManager._proxy.BluetoothAirplaneMode //If Bluetooth is in airplane mode it can't have been disabled
-            && !this._client.wireless_enabled                    //When genuinely disabling airplane mode wireless_enabled is false
-            ) {
+    destroy() {
+        this._disconnectSettings();
+        this._disconnectAirplaneHandler();
+    }
 
-            //Both Wi-Fi and Bluetooth are disabled immediately after airplane mode is disabled
-            //and Bluetooth gets activated shortly afterwards without raising any event
-            //thus we need a little time delay to apply our settings.
-            //(I am not very happy with this but this is the only solution I can think of)
-            setTimeout(Lang.bind(this, function() {
-                //If Wi-Fi is enabled but Bluetooth isn't airplane mode has been disabled
-                //as a side effect of Wi-Fi activation, thus we don't apply our settings.
-                if(this._client.wireless_enabled && this._rfkillManager._proxy.BluetoothAirplaneMode) {
+    _handleAirplaneModeChange() {
+        if (!this._rfkillManager.airplaneMode &&                  // We have a change and airplane mode is off, hence it must have been disabled
+            !this._rfkillManager._proxy.BluetoothAirplaneMode &&  // If Bluetooth is in airplane mode it can't have been disabled
+            !this._client.wireless_enabled                        // When genuinely disabling airplane mode wireless_enabled is false
+        ) {
+            // Both Wi-Fi and Bluetooth are disabled immediately after airplane mode is disabled
+            // and Bluetooth gets activated shortly afterwards without raising any event
+            // thus we need a little time delay to apply our settings.
+            // (I am not very happy with this but this is the only solution I can think of)
+            setTimeout(() => {
+                // If Wi-Fi is enabled but Bluetooth isn't airplane mode has been disabled
+                // as a side effect of Wi-Fi activation, thus we don't apply our settings.
+                if (this._client.wireless_enabled && this._rfkillManager._proxy.BluetoothAirplaneMode) {
                     return;
                 }
 
                 this._client.wireless_enabled                    = ENABLE_WIFI;
                 this._rfkillManager._proxy.BluetoothAirplaneMode = !ENABLE_BLUETOOTH;
-                
-            }), 100);
+            }, 100);
         }
-    },
+    }
 
-    _loadSettings: function () {
+    _loadSettings() {
         this._settings = Prefs.SettingsSchema;
-        this._settingsChangedId = this._settings.connect('changed', Lang.bind(this, this._onSettingsChange));
+        this._settingsChangedId = this._settings.connect('changed', this._onSettingsChange.bind(this));
 
         this._fetchSettings();
-    },
+    }
 
-    _fetchSettings: function () {
+    _fetchSettings() {
         ENABLE_WIFI       = this._settings.get_boolean(Prefs.Fields.ENABLE_WIFI);
         ENABLE_BLUETOOTH  = this._settings.get_boolean(Prefs.Fields.ENABLE_BLUETOOTH);
-    },
+    }
 
-    _onSettingsChange: function () {
+    _onSettingsChange() {
         // Load the settings into variables
         this._fetchSettings();
-    },
+    }
 
-    _disconnectSettings: function () {
+    _disconnectSettings() {
         if (!this._settingsChangedId)
             return;
 
         this._settings.disconnect(this._settingsChangedId);
         this._settingsChangedId = null;
-    },
+    }
 
-    _disconnectAirplaneHandler: function() {
+    _disconnectAirplaneHandler() {
         if (!this._airplaneHandlerId)
             return;
 
         this._rfkillManager.disconnect(this._airplaneHandlerId);
         this._airplaneHandlerId = null;
     }
-});
+};
 
 let saneAirplaneMode;
-function enable () {
+function enable() {
     saneAirplaneMode = new SaneAirplaneMode();
 }
 
-function disable () {
+function disable() {
     saneAirplaneMode.destroy();
 }
