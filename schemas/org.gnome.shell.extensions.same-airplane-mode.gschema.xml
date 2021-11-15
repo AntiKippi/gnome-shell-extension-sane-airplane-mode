@@ -7,7 +7,7 @@
       <description>If set, Wi-Fi will be automatically turned on when airplane mode is disabled.</description>
     </key>
     <key type="b" name="enable-bluetooth">
-      <default>false</default>
+      <default>true</default>
       <summary>Enable Bluetooth</summary>
       <description>If set, Bluetooth will be automatically turned on when airplane mode is disabled.</description>
     </key>
