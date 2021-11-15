@@ -10,7 +10,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Prefs = Me.imports.prefs;
 
 let ENABLE_WIFI      = false;
-let ENABLE_BLUETOOTH = false;
+let ENABLE_BLUETOOTH = true;
 
 
 const setTimeout = (func, millis) => {
@@ -21,7 +21,6 @@ const setTimeout = (func, millis) => {
     });
 };
 
-
 const SaneAirplaneMode = class SaneAirplaneMode {
     constructor() {
         this._init();
@@ -29,6 +28,10 @@ const SaneAirplaneMode = class SaneAirplaneMode {
 
     async _init() {
         this._loadSettings();
+
+        // Initialize oldAirplaneMode with true so it's basically ignored on the first call of handleAirplaneModeChange
+        // We need to ignore it because we don't know the value of airplaneMode from the last time handleAirplaneModeChange was called
+        this._oldAirplaneMode = true;
 
         // Create a NetworkManager client
         this._client = await NM.Client.new_async(null);
@@ -49,7 +52,8 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     }
 
     _handleAirplaneModeChange() {
-        if (!this._rfkillManager.airplaneMode &&                  // We have a change and airplane mode is off, hence it must have been disabled
+        if (!this._rfkillManager.airplaneMode &&                  // Airplane mode is off and
+            this._oldAirplaneMode &&                              // it was previously on, hence it must have been disabled
             !this._rfkillManager._proxy.BluetoothAirplaneMode &&  // If Bluetooth is in airplane mode it can't have been disabled
             !this._client.wireless_enabled                        // When genuinely disabling airplane mode wireless_enabled is false
         ) {
@@ -58,8 +62,8 @@ const SaneAirplaneMode = class SaneAirplaneMode {
             // thus we need a little time delay to apply our settings.
             // (I am not very happy with this but this is the only solution I can think of)
             setTimeout(() => {
-                // If Wi-Fi is enabled but Bluetooth isn't airplane mode has been disabled
-                // as a side effect of Wi-Fi activation, thus we don't apply our settings.
+                // If Wi-Fi is enabled but Bluetooth isn't, airplane mode has been disabled
+                // as a side effect of Wi-Fi activation thus we don't apply our settings.
                 if (this._client.wireless_enabled && this._rfkillManager._proxy.BluetoothAirplaneMode) {
                     return;
                 }
@@ -68,6 +72,8 @@ const SaneAirplaneMode = class SaneAirplaneMode {
                 this._rfkillManager._proxy.BluetoothAirplaneMode = !ENABLE_BLUETOOTH;
             }, 100);
         }
+
+        this._oldAirplaneMode = this._rfkillManager.airplaneMode;
     }
 
     _loadSettings() {

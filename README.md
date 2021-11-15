@@ -5,7 +5,10 @@ Make airplane mode sane again! This extension gives you better control over the 
 
 ## Known limitations
 
- - When in airplane mode, turning on Bluetooth is indistinguishable from turning off airplane mode and will be treated accordingly.
+ - When in airplane mode, turning on Bluetooth is indistinguishable from turning off airplane mode and will be treated accordingly.  
+   This means when you turn on Bluetooth when in airplane mode the following happens:
+   - When "Enable Wi-Fi" is enabled Wi-Fi gets enabled even tough you only wanted to toggle Bluetooth.
+   - When "Enable Bluetooth" is disabled Bluetooth won't turn on. 
  - When choosing not to enable both Bluetooth and Wi-Fi airplane mode might get reactivated. Altough this behaviour (at least on my machine) is only observed the first time disabling airplane mode, since then it works perfectly well.
  - I currently don't have support for mobile broadband networking since I don't need this feature. If support for this is needed please let me know by opening a issue or if you are a developer you might as well create a pull request.
  
