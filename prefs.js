@@ -1,6 +1,6 @@
-const Gtk = imports.gi.Gtk;
-const Gio = imports.gi.Gio;
-const GObject = imports.gi.GObject;
+const Gtk       = imports.gi.Gtk;
+const Gio       = imports.gi.Gio;
+const GObject   = imports.gi.GObject;
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 
 const Gettext = imports.gettext;
