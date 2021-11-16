@@ -1,6 +1,7 @@
-const GLib   = imports.gi.GLib;
-const NM     = imports.gi.NM;
-const Rfkill = imports.ui.status.rfkill;
+const GLib    = imports.gi.GLib;
+const GObject = imports.gi.GObject;
+const NM      = imports.gi.NM;
+const Rfkill  = imports.ui.status.rfkill;
 
 const Gettext = imports.gettext;
 const _ = Gettext.domain('sane-airplane-mode').gettext;
@@ -21,17 +22,10 @@ const setTimeout = (func, millis) => {
     });
 };
 
-const SaneAirplaneMode = class SaneAirplaneMode {
-    constructor() {
-        this._init();
-    }
 
+const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GObject.Object {
     async _init() {
         this._loadSettings();
-
-        // Initialize oldAirplaneMode with true so it's basically ignored on the first call of handleAirplaneModeChange
-        // We need to ignore it because we don't know the value of airplaneMode from the last time handleAirplaneModeChange was called
-        this._oldAirplaneMode = true;
 
         // Create a NetworkManager client
         this._client = await NM.Client.new_async(null);
@@ -39,11 +33,11 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
 
+        // Initialize oldAirplaneMode
+        this._oldAirplaneMode = this._rfkillManager.airplaneMode;
+
         // Connect to the airplane-mode-changed signal
-        this._airplaneHandlerId = this._rfkillManager.connect(
-            'airplane-mode-changed',
-            this._handleAirplaneModeChange.bind(this)
-        );
+        this._airplaneHandlerId = this._rfkillManager.connect('airplane-mode-changed', this._handleAirplaneModeChange.bind(this));
     }
 
     destroy() {
@@ -78,7 +72,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
 
     _loadSettings() {
         this._settings = Prefs.SettingsSchema;
-        this._settingsChangedId = this._settings.connect('changed', this._onSettingsChange.bind(this));
+        this._settingsChangedId = this._settings.connect('changed', this._fetchSettings.bind(this));
 
         this._fetchSettings();
     }
@@ -86,11 +80,6 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     _fetchSettings() {
         ENABLE_WIFI       = this._settings.get_boolean(Prefs.Fields.ENABLE_WIFI);
         ENABLE_BLUETOOTH  = this._settings.get_boolean(Prefs.Fields.ENABLE_BLUETOOTH);
-    }
-
-    _onSettingsChange() {
-        // Load the settings into variables
-        this._fetchSettings();
     }
 
     _disconnectSettings() {
@@ -108,7 +97,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         this._rfkillManager.disconnect(this._airplaneHandlerId);
         this._airplaneHandlerId = null;
     }
-};
+});
 
 let saneAirplaneMode;
 function enable() {
