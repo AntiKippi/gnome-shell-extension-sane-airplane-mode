@@ -13,7 +13,7 @@ let ENABLE_WIFI      = false;
 let ENABLE_BLUETOOTH = true;
 
 const setTimeout = (func, millis) => {
-    return timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
+    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func();
 
         return false; // Don't repeat
