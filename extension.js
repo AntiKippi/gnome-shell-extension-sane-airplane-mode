@@ -12,30 +12,20 @@ const Constants = ExtensionUtils.getCurrentExtension().imports.constants;
 let ENABLE_WIFI      = false;
 let ENABLE_BLUETOOTH = true;
 
-let timeouts = [];
-
 const setTimeout = (func, millis) => {
-    let timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
+    return timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func();
-
-        // Remove timeout on completion of func
-        if(timeoutId) {
-            try {
-                GLib.Source.remove(timeoutId);
-            } catch (e) {
-                log('Couldn\'t remove timeout: ' + e);
-            }
-        }
 
         return false; // Don't repeat
     });
-    return timeoutId;
 };
 
 
 const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GObject.Object {
     async _init() {
         this._loadSettings();
+
+        this._timeouts = [];
 
         // Create a NetworkManager client
         this._client = await NM.Client.new_async(null);
@@ -53,6 +43,7 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
     destroy() {
         this._disconnectSettings();
         this._disconnectAirplaneHandler();
+        this._disconnectTimeouts();
     }
 
     _handleAirplaneModeChange() {
@@ -65,9 +56,9 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
             // and Bluetooth gets activated shortly afterwards without raising any event
             // thus we need a little time delay to apply our settings.
             // (I am not very happy with this but this is the only solution I can think of)
-            let index = timeouts.push(setTimeout(() => {
+            let index = this._timeouts.push(setTimeout(() => {
                 // Remove our timeout
-                timeouts.splice(index, 1);
+                this._timeouts.splice(index, 1);
 
                 // If Wi-Fi is enabled but Bluetooth isn't, airplane mode has been disabled
                 // as a side effect of Wi-Fi activation thus we don't apply our settings.
@@ -112,6 +103,21 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
         this._rfkillManager.disconnect(this._airplaneHandlerId);
         this._airplaneHandlerId = null;
     }
+
+    _disconnectTimeouts() {
+        // Remove all active timeouts
+        for (let i = 0; i < this._timeouts.length; i++) {
+            try {
+                if(this._timeouts[i]) {
+                    GLib.Source.remove(this._timeouts[i]);
+                }
+            } catch (e) {
+                log('Couldn\'t remove timeout: ' + e);
+            }
+        }
+
+        this._timeouts = null;
+    }
 });
 
 let saneAirplaneMode;
@@ -121,13 +127,5 @@ function enable() {
 
 function disable() {
     saneAirplaneMode.destroy();
-
-    // Remove all active timeouts
-    for (let i = 0; i < timeouts.length; i++) {
-        try {
-            GLib.Source.remove(timeouts[i]);
-        } catch (e) {
-            log('Couldn\'t remove timeout: ' + e);
-        }
-    }
+    saneAirplaneMode = null;
 }
