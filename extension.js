@@ -1,22 +1,24 @@
-const GLib    = imports.gi.GLib;
-const GObject = imports.gi.GObject;
-const NM      = imports.gi.NM;
-const Rfkill  = imports.ui.status.rfkill;
+const GLib           = imports.gi.GLib;
+const GObject        = imports.gi.GObject;
+const NM             = imports.gi.NM;
+const Rfkill         = imports.ui.status.rfkill;
+const ExtensionUtils = imports.misc.extensionUtils;
 
 const Gettext = imports.gettext;
 const _ = Gettext.domain('sane-airplane-mode').gettext;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Prefs = Me.imports.prefs;
+const Constants = ExtensionUtils.getCurrentExtension().imports.constants;
 
 let ENABLE_WIFI      = false;
 let ENABLE_BLUETOOTH = true;
 
 
 const setTimeout = (func, millis) => {
-    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
+    let timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func();
+
+        // Remove timeout on completion of func
+        GLib.Source.remove(timeoutId);
 
         return false; // Don't repeat
     });
@@ -71,15 +73,15 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
     }
 
     _loadSettings() {
-        this._settings = Prefs.SettingsSchema;
+        this._settings = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
         this._settingsChangedId = this._settings.connect('changed', this._fetchSettings.bind(this));
 
         this._fetchSettings();
     }
 
     _fetchSettings() {
-        ENABLE_WIFI       = this._settings.get_boolean(Prefs.Fields.ENABLE_WIFI);
-        ENABLE_BLUETOOTH  = this._settings.get_boolean(Prefs.Fields.ENABLE_BLUETOOTH);
+        ENABLE_WIFI       = this._settings.get_boolean(Constants.Fields.ENABLE_WIFI);
+        ENABLE_BLUETOOTH  = this._settings.get_boolean(Constants.Fields.ENABLE_BLUETOOTH);
     }
 
     _disconnectSettings() {
