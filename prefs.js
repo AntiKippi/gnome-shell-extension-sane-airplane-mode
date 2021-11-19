@@ -1,32 +1,18 @@
-const Gtk       = imports.gi.Gtk;
-const Gio       = imports.gi.Gio;
-const GObject   = imports.gi.GObject;
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
+const Gtk            = imports.gi.Gtk;
+const Gio            = imports.gi.Gio;
+const GObject        = imports.gi.GObject;
+const ExtensionUtils = imports.misc.extensionUtils;
 
 const Gettext = imports.gettext;
 const _ = Gettext.domain('sane-airplane-mode').gettext;
 
-var Fields = {
-    ENABLE_WIFI      : 'enable-wifi',
-    ENABLE_BLUETOOTH : 'enable-bluetooth',
-};
-
-const SCHEMA_NAME = 'org.gnome.shell.extensions.sane-airplane-mode';
-
-const getSchema = function () {
-    let schemaDir = Extension.dir.get_child('schemas').get_path();
-    let schemaSource = Gio.SettingsSchemaSource.new_from_directory(schemaDir, Gio.SettingsSchemaSource.get_default(), false);
-    let schema = schemaSource.lookup(SCHEMA_NAME, false);
-
-    return new Gio.Settings({ settings_schema: schema });
-};
-
-var SettingsSchema = getSchema();
+const Constants      = ExtensionUtils.getCurrentExtension().imports.constants;
+const SettingsSchema = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
 
 
 function init() { }
 
-const App = GObject.registerClass(class Settings extends GObject.Object  { 
+const App = GObject.registerClass(class Settings extends GObject.Object {
     _init() {
         this.main = new Gtk.Grid({
             margin_top: 10,
@@ -70,7 +56,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object  {
                 let inputWidget = input;
 
                 if (input instanceof Gtk.Switch) {
-                    inputWidget = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
+                    inputWidget = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
                     inputWidget.append(input);
                 }
 
@@ -89,8 +75,8 @@ const App = GObject.registerClass(class Settings extends GObject.Object  {
         addRow(wifiLabel,      this.field_wifi_toggle);
         addRow(bluetoothLabel, this.field_bluetooth_toggle);
 
-        SettingsSchema.bind(Fields.ENABLE_WIFI, this.field_wifi_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Fields.ENABLE_BLUETOOTH, this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,      this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH, this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 });
 
