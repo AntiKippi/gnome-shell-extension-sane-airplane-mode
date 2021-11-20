@@ -17,7 +17,7 @@ Hint: With this extension you can also turn off the annoying "Bluetooth gets tur
 
 ### GNOME Extensions
 
-[<img src="ego.png" alt="Install from extensions.gnome.org" height="100">](https://extensions.gnome.org/extension/4604/)
+[!["Install from extensions.gnome.org"](ego.svg)](https://extensions.gnome.org/extension/4604/)
 
 ### Git
 
