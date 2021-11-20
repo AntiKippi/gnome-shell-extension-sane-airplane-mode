@@ -15,7 +15,11 @@ Hint: With this extension you can also turn off the annoying "Bluetooth gets tur
 
 ## Installation
 
-You can install this extension via the GNOME extension site ([https://extensions.gnome.org/extension/4604/](https://extensions.gnome.org/extension/4604/)) or via git.
+### GNOME Extensions
+
+[<img src="ego.png" alt="Install from extensions.gnome.org" height="100">](https://extensions.gnome.org/extension/4604/)
+
+### Git
 
 Installation via git is performed by cloning the repo into your local gnome-shell extensions directory (usually ~/.local/share/gnome-shell/extensions/):
 
