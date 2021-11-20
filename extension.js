@@ -1,5 +1,4 @@
 const GLib           = imports.gi.GLib;
-const GObject        = imports.gi.GObject;
 const NM             = imports.gi.NM;
 const Rfkill         = imports.ui.status.rfkill;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -21,7 +20,11 @@ const setTimeout = (func, millis) => {
 };
 
 
-const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GObject.Object {
+const SaneAirplaneMode = class SaneAirplaneMode {
+    constructor() {
+        this._init();
+    }
+
     async _init() {
         this._loadSettings();
 
@@ -108,7 +111,7 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
         // Remove all active timeouts
         for (let i = 0; i < this._timeouts.length; i++) {
             try {
-                if(this._timeouts[i]) {
+                if (this._timeouts[i]) {
                     GLib.Source.remove(this._timeouts[i]);
                 }
             } catch (e) {
@@ -118,7 +121,7 @@ const SaneAirplaneMode = GObject.registerClass(class SaneAirplaneMode extends GO
 
         this._timeouts = null;
     }
-});
+};
 
 let saneAirplaneMode;
 function enable() {
@@ -126,6 +129,8 @@ function enable() {
 }
 
 function disable() {
-    saneAirplaneMode.destroy();
-    saneAirplaneMode = null;
+    if (saneAirplaneMode) {
+        saneAirplaneMode.destroy();
+        saneAirplaneMode = null;
+    }
 }
