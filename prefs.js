@@ -26,8 +26,9 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         });
         this.field_wifi_toggle = new Gtk.Switch();
         this.field_bluetooth_toggle = new Gtk.Switch();
+        this.field_airplane_toogle = new Gtk.Switch();
 
-        let titleLabel = new Gtk.Label({
+        let airplaneTitleLabel = new Gtk.Label({
             label: '<b>' + _('When disabling airplane mode') + ':</b>',
             halign: Gtk.Align.START,
             use_markup: true,
@@ -40,6 +41,17 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         });
         let bluetoothLabel = new Gtk.Label({
             label: _('Enable Bluetooth'),
+            hexpand: true,
+            halign: Gtk.Align.START,
+        });
+        let wifiTitleLabel = new Gtk.Label({
+            label: '<b>' + _('When disabling Wi-FI') + ':</b>',
+            halign: Gtk.Align.START,
+            use_markup: true,
+            visible: true,
+        });
+        let enableAirplaneLabel  = new Gtk.Label({
+            label: _('Enable airplane mode'),
             hexpand: true,
             halign: Gtk.Align.START,
         });
@@ -71,12 +83,15 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             };
         })(this.main);
 
-        addRow(titleLabel,     undefined);
-        addRow(wifiLabel,      this.field_wifi_toggle);
-        addRow(bluetoothLabel, this.field_bluetooth_toggle);
+        addRow(airplaneTitleLabel,  undefined);
+        addRow(wifiLabel,           this.field_wifi_toggle);
+        addRow(bluetoothLabel,      this.field_bluetooth_toggle);
+        addRow(wifiTitleLabel,      undefined);
+        addRow(enableAirplaneLabel, this.field_airplane_toogle);
 
-        SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,      this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH, this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,          this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH,     this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE, this.field_airplane_toogle,  'active', Gio.SettingsBindFlags.DEFAULT);
     }
 });
 
