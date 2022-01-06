@@ -45,7 +45,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             halign: Gtk.Align.START,
         });
         let wifiTitleLabel = new Gtk.Label({
-            label: '<b>' + _('When disabling Wi-FI') + ':</b>',
+            label: '<b>' + _('When disabling Wi-Fi') + ':</b>',
             halign: Gtk.Align.START,
             use_markup: true,
             visible: true,
