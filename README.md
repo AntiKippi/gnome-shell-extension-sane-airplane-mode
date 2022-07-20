@@ -1,6 +1,6 @@
 # Sane Airplane Mode
 
-Make airplane mode sane again! This extension gives you better control over the airplane mode. Ot at least it is my attemt so make a utterly broken airplane mode implemetation somewhat sane to handle.  
+Make airplane mode sane again! This extension gives you better control over the airplane mode. Or at least it is my attempt to make a utterly broken airplane mode implementation somewhat sane to handle.  
 Hint: With this extension you can also turn off the annoying "Bluetooth gets turned on when I disable airplane mode" behaviour.
 
 ## Known limitations
