@@ -8,6 +8,10 @@ const _ = Gettext.domain('sane-airplane-mode').gettext;
 
 const Constants = ExtensionUtils.getCurrentExtension().imports.constants;
 
+const Config = imports.misc.config;
+const shellVersion = parseFloat(Config.PACKAGE_VERSION);
+
+
 let ENABLE_WIFI          = false;
 let ENABLE_BLUETOOTH     = true;
 let ENABLE_AIRPLANE_MODE = true;
@@ -43,8 +47,9 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         // Initialize skipOnce
         this._skipOnce = false;
 
-        // Connect to the airplane-mode-changed signal
-        this._airplaneHandlerId = this._rfkillManager.connect('airplane-mode-changed', this._handleAirplaneModeChange.bind(this));
+        // Connect to the "airplane mode changed" signal
+        let signalName = (shellVersion < 43)? 'airplane-mode-changed' : 'notify::airplane-mode';
+        this._airplaneHandlerId = this._rfkillManager.connect(signalName, this._handleAirplaneModeChange.bind(this));
     }
 
     destroy() {
