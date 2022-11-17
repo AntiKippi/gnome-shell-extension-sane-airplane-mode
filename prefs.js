@@ -9,6 +9,9 @@ const _ = Gettext.domain('sane-airplane-mode').gettext;
 const Constants      = ExtensionUtils.getCurrentExtension().imports.constants;
 const SettingsSchema = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
 
+const gtkVersion = Gtk.get_major_version();
+
+
 
 function init() { }
 
@@ -69,7 +72,12 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
 
                 if (input instanceof Gtk.Switch) {
                     inputWidget = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
-                    inputWidget.append(input);
+
+                    if (gtkVersion >= 4) {
+                        inputWidget.append(input);
+                    } else {
+                        inputWidget.pack_end(input, false, false, 0);
+                    }
                 }
 
                 if (label) {
@@ -92,6 +100,10 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,          this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
         SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH,     this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
         SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE, this.field_airplane_toogle,  'active', Gio.SettingsBindFlags.DEFAULT);
+
+        if (gtkVersion < 4) {
+            this.main.show_all();
+        }
     }
 });
 
