@@ -27,7 +27,7 @@ const setTimeout = (func, millis) => {
 
 const SaneAirplaneMode = class SaneAirplaneMode {
     constructor() {
-        this._init();
+        this._init().catch((err) => { log(err.message) });
     }
 
     async _init() {
