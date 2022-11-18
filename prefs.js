@@ -9,16 +9,27 @@ const _ = Gettext.domain('sane-airplane-mode').gettext;
 const Constants      = ExtensionUtils.getCurrentExtension().imports.constants;
 const SettingsSchema = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
 
-const gtkVersion = Gtk.get_major_version();
-
 const Config = imports.misc.config;
 const shellVersion = parseFloat(Config.PACKAGE_VERSION);
+
+const gtkVersion = Gtk.get_major_version();
 
 
 function init() { }
 
 const App = GObject.registerClass(class Settings extends GObject.Object {
     _init() {
+        //Polyfills for GTK3
+        if (gtkVersion < 4) {
+            Gtk.Box.prototype.append = function(widget) {
+                return this.pack_start(widget, false, false, 0);
+            }
+
+            Gtk.Frame.prototype.set_child = function(widget) {
+                return this.add(widget);
+            }
+        }
+
         this.main = new Gtk.Grid({
             margin_top: 10,
             margin_bottom: 10,
@@ -31,6 +42,52 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         });
 
         let initialRow = 0;
+
+        //Display warning when GNOME shell version is not supported
+        if (shellVersion < 3.36) {
+            // Apply css style to widgets
+            const styleWidget = function(css, widget) {
+                let css_provider = new Gtk.CssProvider();
+                css_provider.load_from_data(css);
+                let context = widget.get_style_context();
+                context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            }
+            
+            const GITHUB_URL = 'https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode'
+
+            // We use the first three rows for the warning, so lets move the other stuff 3 rows down
+            initialRow = 3;
+
+            let warning_frame = new Gtk.Frame();
+            let warning_box = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
+            let warning_label = new Gtk.Label({
+                label: '<b>' + '  ⚠ ' + _('Warning') + ':</b> ' + 
+                       _('This extension is not supported on your version of GNOME Shell') + '. ',
+                halign: Gtk.Align.START,
+                use_markup: true,
+                visible: true,
+            });
+            let warning_details_label = new Gtk.Label({
+                label: '(<a href="' + GITHUB_URL + '">' + _('Details') + '</a>)',
+                halign: Gtk.Align.START,
+                use_markup: true,
+                visible: true,
+            });
+
+            styleWidget('* { background-color: #ffc107; }', warning_box); 
+            styleWidget('* { color: black; }', warning_label);
+            styleWidget('* { color: #0d6efd; }', warning_details_label);
+
+            warning_box.append(warning_label);
+            warning_box.append(warning_details_label);
+            warning_frame.set_child(warning_box);
+            
+            this.main.attach(warning_frame, 0, 0, 2, 3);
+
+            //We add two empty labels as padding
+            this.main.attach(new Gtk.Label(), 0, 1, 2, 1);
+            this.main.attach(new Gtk.Label(), 0, 2, 2, 1);
+        }
 
         this.field_wifi_toggle = new Gtk.Switch();
         this.field_bluetooth_toggle = new Gtk.Switch();
@@ -77,12 +134,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
 
                 if (input instanceof Gtk.Switch) {
                     inputWidget = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
-
-                    if (gtkVersion >= 4) {
-                        inputWidget.append(input);
-                    } else {
-                        inputWidget.pack_end(input, false, false, 0);
-                    }
+                    inputWidget.append(input);
                 }
 
                 if (label) {

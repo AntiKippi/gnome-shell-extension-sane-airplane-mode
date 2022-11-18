@@ -10,7 +10,13 @@ Hint: With this extension you can also turn off the annoying "Bluetooth gets tur
    - When "Enable Wi-Fi" is enabled Wi-Fi gets enabled even tough you only wanted to toggle Bluetooth.
    - When "Enable Bluetooth" is disabled Bluetooth won't turn on. 
  - When choosing not to enable both Bluetooth and Wi-Fi airplane mode might get reactivated. Altough this behaviour (at least on my machine) is only observed the first time disabling airplane mode, since then it works perfectly well.
- - I currently don't have support for mobile broadband networking since I don't need this feature. If support for this is needed please let me know by opening a issue or if you are a developer you might as well create a pull request.
+ - This extension has no support for mobile broadband networking since I don't need this feature. If support for this is needed please let me know by opening a issue or if you are a developer you might as well create a pull request.
+
+
+ ## GNOME Version Support
+All GNOME Shell versions back to GNOME Shell 3.36 are supported.
+
+If your GNOME Shell version is smaller than 3.36 (e.g. 3.34, 3.32, etc), this extension _may_ work fine as well but I can't guarantee for anything. Please don't report issues if your GNOME Shell version is < 3.36.
  
 
 ## Installation
