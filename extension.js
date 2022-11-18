@@ -27,16 +27,16 @@ const setTimeout = (func, millis) => {
 
 const SaneAirplaneMode = class SaneAirplaneMode {
     constructor() {
-        this._init().catch((err) => { log(err.message) });
+        this._init();
     }
 
-    async _init() {
+    _init() {
         this._loadSettings();
 
         this._timeouts = [];
 
         // Create a NetworkManager client
-        this._client = await NM.Client.new_async(null);
+        this._client = NM.Client.new(null);
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
@@ -59,6 +59,8 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     }
 
     _handleAirplaneModeChange() {
+        const DELAY = 100;
+
         if (this._skipOnce) {
             this._skipOnce = false;
         } else {
@@ -83,7 +85,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
 
                     this._client.wireless_enabled                    = ENABLE_WIFI;
                     this._rfkillManager._proxy.BluetoothAirplaneMode = !ENABLE_BLUETOOTH;
-                }, 50)) - 1;
+                }, DELAY)) - 1;
             }
         }
 
@@ -101,7 +103,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
                 this._timeouts.splice(index, 1);
 
                 this._rfkillManager._proxy.BluetoothAirplaneMode = true;
-            }, 50)) - 1;
+            }, DELAY)) - 1;
         }
 
         this._oldAirplaneMode = this._rfkillManager.airplaneMode;

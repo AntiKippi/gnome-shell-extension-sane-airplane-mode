@@ -11,6 +11,8 @@ const SettingsSchema = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
 
 const gtkVersion = Gtk.get_major_version();
 
+const Config = imports.misc.config;
+const shellVersion = parseFloat(Config.PACKAGE_VERSION);
 
 
 function init() { }
@@ -27,6 +29,9 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             column_homogeneous: false,
             row_homogeneous: false,
         });
+
+        let initialRow = 0;
+
         this.field_wifi_toggle = new Gtk.Switch();
         this.field_bluetooth_toggle = new Gtk.Switch();
         this.field_airplane_toogle = new Gtk.Switch();
@@ -60,7 +65,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         });
 
         const addRow = (main => {
-            let row = 0;
+            let row = initialRow;
             return (label, input) => {
                 function attachWidget(widget, column, width, height) {
                     if (widget) {
