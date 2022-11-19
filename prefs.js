@@ -19,15 +19,15 @@ function init() { }
 
 const App = GObject.registerClass(class Settings extends GObject.Object {
     _init() {
-        //Polyfills for GTK3
+        // Polyfills for GTK3
         if (gtkVersion < 4) {
             Gtk.Box.prototype.append = function(widget) {
                 return this.pack_start(widget, false, false, 0);
-            }
+            };
 
             Gtk.Frame.prototype.set_child = function(widget) {
                 return this.add(widget);
-            }
+            };
         }
 
         this.main = new Gtk.Grid({
@@ -43,48 +43,45 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
 
         let initialRow = 0;
 
-        //Display warning when GNOME shell version is not supported
+        // Display warning when GNOME shell version is not supported
         if (shellVersion < 3.36) {
             // Apply css style to widgets
-            const styleWidget = function(css, widget) {
-                let css_provider = new Gtk.CssProvider();
-                css_provider.load_from_data(css);
+            const styleWidget = (css, widget) => {
+                let cssProvider = new Gtk.CssProvider();
+                cssProvider.load_from_data(css);
                 let context = widget.get_style_context();
-                context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            }
-            
-            const GITHUB_URL = 'https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode'
+                context.add_provider(cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            };
 
             // We use the first three rows for the warning, so lets move the other stuff 3 rows down
             initialRow = 3;
 
-            let warning_frame = new Gtk.Frame();
-            let warning_box = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
-            let warning_label = new Gtk.Label({
-                label: '<b>' + '  ⚠ ' + _('Warning') + ':</b> ' + 
-                       _('This extension is not supported on your version of GNOME Shell') + '. ',
+            let warningFrame = new Gtk.Frame();
+            let warningBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
+            let warningLabel = new Gtk.Label({
+                label: `<b>  ⚠ ${_('Warning')}:</b> ${_('This extension is not supported on your version of GNOME Shell')}. `,
                 halign: Gtk.Align.START,
                 use_markup: true,
                 visible: true,
             });
-            let warning_details_label = new Gtk.Label({
-                label: '(<a href="' + GITHUB_URL + '">' + _('Details') + '</a>)',
+            let warningDetailsLabel = new Gtk.Label({
+                label: `(<a href="${Constants.GITHUB_URL}">${_('Details')}</a>)`,
                 halign: Gtk.Align.START,
                 use_markup: true,
                 visible: true,
             });
 
-            styleWidget('* { background-color: #ffc107; }', warning_box); 
-            styleWidget('* { color: black; }', warning_label);
-            styleWidget('* { color: #0d6efd; }', warning_details_label);
+            styleWidget('* { background-color: #ffc107; }', warningBox);
+            styleWidget('* { color: black; }', warningLabel);
+            styleWidget('* { color: #0d6efd; }', warningDetailsLabel);
 
-            warning_box.append(warning_label);
-            warning_box.append(warning_details_label);
-            warning_frame.set_child(warning_box);
-            
-            this.main.attach(warning_frame, 0, 0, 2, 3);
+            warningBox.append(warningLabel);
+            warningBox.append(warningDetailsLabel);
+            warningFrame.set_child(warningBox);
 
-            //We add two empty labels as padding
+            this.main.attach(warningFrame, 0, 0, 2, 3);
+
+            // We add two empty labels as padding
             this.main.attach(new Gtk.Label(), 0, 1, 2, 1);
             this.main.attach(new Gtk.Label(), 0, 2, 2, 1);
         }
@@ -94,7 +91,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         this.field_airplane_toogle = new Gtk.Switch();
 
         let airplaneTitleLabel = new Gtk.Label({
-            label: '<b>' + _('When disabling airplane mode') + ':</b>',
+            label: `<b>${_('When disabling airplane mode')}:</b>`,
             halign: Gtk.Align.START,
             use_markup: true,
             visible: true,
@@ -110,7 +107,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             halign: Gtk.Align.START,
         });
         let wifiTitleLabel = new Gtk.Label({
-            label: '<b>' + _('When disabling Wi-Fi (as the last active radio)') + ':</b>',
+            label: `<b>${_('When disabling Wi-Fi (as the last active radio)')}:</b>`,
             halign: Gtk.Align.START,
             use_markup: true,
             visible: true,
@@ -121,7 +118,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             halign: Gtk.Align.START,
         });
 
-        const addRow = (main => {
+        const addRow = ((main) => {
             let row = initialRow;
             return (label, input) => {
                 function attachWidget(widget, column, width, height) {

@@ -16,7 +16,7 @@ let ENABLE_WIFI          = false;
 let ENABLE_BLUETOOTH     = true;
 let ENABLE_AIRPLANE_MODE = true;
 
-const setTimeout = (func, millis) => {
+const addTimeout = (func, millis) => {
     return GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func();
 
@@ -24,19 +24,28 @@ const setTimeout = (func, millis) => {
     });
 };
 
+const removeTimeout = (timeoutId) => {
+    GLib.Source.remove(timeoutId);
+};
+
 
 const SaneAirplaneMode = class SaneAirplaneMode {
     constructor() {
-        this._init();
+        this._init().catch((e) => { log(e); });
     }
 
-    _init() {
+    async _init() {
         this._loadSettings();
 
         this._timeouts = [];
 
         // Create a NetworkManager client
-        this._client = NM.Client.new(null);
+        // This must be async, if we make this call syncronously wireless_enabled isn't true when airplane mode is enabled by disabling Wi-Fi
+        if (shellVersion > 3.36) {
+            this._client = await NM.Client.new_async(null);
+        } else {
+            this._client = NM.Client.new(null);
+        }
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
@@ -73,7 +82,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
                 // and Bluetooth gets activated shortly afterwards without raising any event
                 // thus we need a little time delay to apply our settings.
                 // (I am not very happy with this but this is the only solution I can think of)
-                let index = this._timeouts.push(setTimeout(() => {
+                let index = this._timeouts.push(addTimeout(() => {
                     // Remove our timeout
                     this._timeouts.splice(index, 1);
 
@@ -98,7 +107,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
             this._rfkillManager.airplaneMode = false;
 
             // We need a timeout again here because Bluetooth gets activated shortly afterwards without any event
-            let index = this._timeouts.push(setTimeout(() => {
+            let index = this._timeouts.push(addTimeout(() => {
                 // Remove our timeout
                 this._timeouts.splice(index, 1);
 
@@ -145,14 +154,14 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         if (!this._timeouts) {
             return;
         }
-        
+
         for (let i = 0; i < this._timeouts.length; i++) {
             try {
                 if (this._timeouts[i]) {
-                    GLib.Source.remove(this._timeouts[i]);
+                    removeTimeout(this._timeouts[i]);
                 }
             } catch (e) {
-                log('Couldn\'t remove timeout: ' + e);
+                log(`Couldn't remove timeout: ${e}`);
             }
         }
 
