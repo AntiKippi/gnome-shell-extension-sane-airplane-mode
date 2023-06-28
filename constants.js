@@ -6,4 +6,4 @@ var Fields = {
 
 var SCHEMA_NAME = 'org.gnome.shell.extensions.sane-airplane-mode';
 
-var GITHUB_URL = 'https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode';
+var GITHUB_URL = 'https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode';

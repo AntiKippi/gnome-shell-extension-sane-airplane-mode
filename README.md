@@ -29,7 +29,7 @@ If your GNOME Shell version is smaller than 3.36 (e.g. 3.34, 3.32, etc), this ex
 
 Installation via git is performed by cloning the repo into your local gnome-shell extensions directory (usually ~/.local/share/gnome-shell/extensions/):
 
-    $ git clone https://github.com/xKippi/gnome-shell-extension-sane-airplane-mode.git <extensions-dir>/sane-airplane-mode@kippi
+    $ git clone https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode.git <extensions-dir>/sane-airplane-mode@kippi
 
 After cloning the repo, the extension is practically installed yet disabled. In order to enable it, find the extension titled 'Sane Airplane Mode', in the 'Extensions' application and turn it 'On'.
 You may need to restart the GNOME shell (<kbd>Alt</kbd>+<kbd>F2</kbd> and insert 'r' in the prompt) for the extension to be listed there.
