@@ -16,6 +16,8 @@ let ENABLE_WIFI          = false;
 let ENABLE_BLUETOOTH     = true;
 let ENABLE_AIRPLANE_MODE = true;
 
+
+// Execute func once after millis milliseconds
 const addTimeout = (func, millis) => {
     return GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func();
@@ -24,6 +26,12 @@ const addTimeout = (func, millis) => {
     });
 };
 
+// Execute func repeatedly until it returns false or the interval is removed with removeTimeout
+const addInterval = (func, millis) => {
+    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, func);
+};
+
+// Removes a timeout or an interval
 const removeTimeout = (timeoutId) => {
     GLib.Source.remove(timeoutId);
 };
@@ -50,8 +58,35 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
 
+        // Initialize management object for WiFi, Bluetooth and airplane mode settings
+        // We need to use this._sam, which is set to the current SaneAirplaneMode instance
+        // because "this" now refers to the _radioSettings object
+        this._radioSettings = {
+            get bluetoothEnabled() {
+                return !this._sam._rfkillManager._proxy.BluetoothAirplaneMode;
+            },
+            set bluetoothEnabled(arg) {
+                this._sam._rfkillManager._proxy.BluetoothAirplaneMode = !arg;
+            },
+
+            get wifiEnabled() {
+                return this._sam._client.wireless_enabled;
+            },
+            set wifiEnabled(arg) {
+                this._sam._client.wireless_enabled = arg;
+            },
+
+            get airplaneModeEnabled() {
+                return this._sam._rfkillManager.airplaneMode;
+            },
+            set airplaneModeEnabled(arg) {
+                this._sam._rfkillManager.airplaneMode = arg;
+            }
+        };
+        this._radioSettings._sam = this;
+
         // Initialize oldAirplaneMode
-        this._oldAirplaneMode = this._rfkillManager.airplaneMode;
+        this._oldAirplaneMode = this._radioSettings.airplaneModeEnabled;
 
         // Initialize skipOnce
         this._skipOnce = false;
@@ -68,54 +103,111 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     }
 
     _handleAirplaneModeChange() {
-        const DELAY = 100;
+        const CHECK_INTERVAL = 25;
+        const CHECK_COUNT = 10;
 
         if (this._skipOnce) {
             this._skipOnce = false;
         } else {
-            if (!this._rfkillManager.airplaneMode &&                  // Airplane mode is off and
-                this._oldAirplaneMode &&                              // it was previously on, hence it must have been disabled
-                !this._rfkillManager._proxy.BluetoothAirplaneMode &&  // If Bluetooth is in airplane mode it can't have been disabled
-                !this._client.wireless_enabled                        // When genuinely disabling airplane mode wireless_enabled is false
+            if (!this._radioSettings.airplaneModeEnabled &&     // Airplane mode is off and
+                this._oldAirplaneMode &&                        // it was previously on, hence it must have been disabled
+                this._radioSettings.bluetoothEnabled &&         // If Bluetooth is in airplane mode it can't have been disabled
+                !this._radioSettings.wifiEnabled                // When genuinely disabling airplane mode wireless_enabled is false
             ) {
-                // Both Wi-Fi and Bluetooth are disabled immediately after airplane mode is disabled
-                // and Bluetooth gets activated shortly afterwards without raising any event
-                // thus we need a little time delay to apply our settings.
-                // (I am not very happy with this but this is the only solution I can think of)
-                let index = this._timeouts.push(addTimeout(() => {
-                    // Remove our timeout
-                    this._timeouts.splice(index, 1);
 
-                    // If Wi-Fi is enabled but Bluetooth isn't, airplane mode has been disabled
-                    // as a side effect of Wi-Fi activation thus we don't apply our settings.
-                    if (this._client.wireless_enabled && this._rfkillManager._proxy.BluetoothAirplaneMode) {
-                        return;
+                // If Wi-Fi is enabled but Bluetooth isn't, airplane mode has been disabled
+                // as a side effect of Wi-Fi activation thus we don't apply our settings.
+                if (this._radioSettings.wifiEnabled && !this._radioSettings.bluetoothEnabled) {
+                    return;
+                }
+
+                log("Applying settings on airplane_mode_changed");
+                this._radioSettings.wifiEnabled      = ENABLE_WIFI;
+                this._radioSettings.bluetoothEnabled = ENABLE_BLUETOOTH;
+                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+
+                /* Both Wi-Fi and Bluetooth are disabled immediately after airplane mode is disabled
+                 * and Bluetooth gets activated shortly afterwards without raising any event.
+                 *
+                 * Thus we check the settings every CHECK_INTERVAL ms and reapply them.
+                 * The function executes at least CHECK_COUNT times and then until the settings fit.
+                 * 
+                 * We execute at least CHECK_COUNT times because even if the settings might seem to have got applied
+                 * they might be overridden afterwards by the Bluetooth activation.
+                 * 
+                 * This also means that as a side effect for CHECK_INTERVAL * CHECK_COUNT seconds
+                 * the WiFi and Bluetooth settings cannot be changed.
+                 */ 
+                let count = 0;
+                let index = this._timeouts.push(addInterval(() => {
+                    log(`Executing interval the ${count} time...`);
+
+                    // Stop this loop when logic has been executed CHECK_COUNT times and the settings are correct
+                    if(++count > CHECK_COUNT &&
+                        this._radioSettings.wifiEnabled == ENABLE_WIFI && 
+                        this._radioSettings.bluetoothEnabled == ENABLE_BLUETOOTH
+                    ) {
+                        // Remove our timeout
+                        this._timeouts.splice(index, 1);
+
+                        log("Stopping settings interval");
+
+                        // Don't repeat any more
+                        return false;
                     }
 
-                    this._client.wireless_enabled                    = ENABLE_WIFI;
-                    this._rfkillManager._proxy.BluetoothAirplaneMode = !ENABLE_BLUETOOTH;
-                }, DELAY)) - 1;
+                    log("Current state:")
+                    log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+                    log("Applying settings...");
+                    this._radioSettings.wifiEnabled      = ENABLE_WIFI;
+                    this._radioSettings.bluetoothEnabled = ENABLE_BLUETOOTH;
+                    log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+
+                    // Repeat
+                    return true;
+                }, CHECK_INTERVAL)) - 1;
             }
         }
 
-        if (!ENABLE_AIRPLANE_MODE &&             // Only do if the user disabled ENABLE_AIRPLANE_MODE in the settings
-            this._rfkillManager.airplaneMode &&  // Airplane mode is on and
-            !this._oldAirplaneMode &&            // it was previously off, hence it must have been enabled
-            this._client.wireless_enabled        // Paradoxically if wireless_enabled is true, airplane mode was enabled by disabling Wi-Fi
+        if (!ENABLE_AIRPLANE_MODE &&                    // Only do if the user disabled ENABLE_AIRPLANE_MODE in the settings
+            this._radioSettings.airplaneModeEnabled &&  // Airplane mode is on and
+            !this._oldAirplaneMode &&                   // it was previously off, hence it must have been enabled
+            this._radioSettings.wifiEnabled             // Paradoxically if wireless_enabled is true, airplane mode was enabled by disabling Wi-Fi
         ) {
             this._skipOnce = true;
-            this._rfkillManager.airplaneMode = false;
+            this._radioSettings.airplaneModeEnabled = false;
+            this._radioSettings.bluetoothEnabled = false;
 
             // We need a timeout again here because Bluetooth gets activated shortly afterwards without any event
-            let index = this._timeouts.push(addTimeout(() => {
-                // Remove our timeout
-                this._timeouts.splice(index, 1);
+            // The text from the "apply settings" interval also applies with the minor difference that only the Bluetooth state is fixed
+            let count = 0;
+            let index = this._timeouts.push(addInterval(() => {
+                log(`Executing disable bt interval the ${count} time...`);
 
-                this._rfkillManager._proxy.BluetoothAirplaneMode = true;
-            }, DELAY)) - 1;
+                if(++count > CHECK_COUNT &&
+                    this._radioSettings.bluetoothEnabled == false
+                ) {
+                    // Remove our timeout
+                    this._timeouts.splice(index, 1);
+
+                    log("Stopping disable bt interval");
+
+                    // Don't repeat any more
+                    return false;
+                }
+
+                log("Current state:")
+                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+                log("Disabling bt...");
+                this._radioSettings.bluetoothEnabled = false;
+                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+
+                // Repeat
+                return true;
+            }, CHECK_INTERVAL)) - 1;
         }
 
-        this._oldAirplaneMode = this._rfkillManager.airplaneMode;
+        this._oldAirplaneMode = this._radioSettings.airplaneModeEnabled;
     }
 
     _loadSettings() {
