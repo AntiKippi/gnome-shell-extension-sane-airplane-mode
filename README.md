@@ -1,7 +1,7 @@
 # Sane Airplane Mode
 
 Make airplane mode sane again! This extension gives you better control over the airplane mode. Or at least it is my attempt to make a utterly broken airplane mode implementation somewhat sane to handle.  
-With this extension you can turn off the annoying "Bluetooth gets turned on when I disable airplane mode" behaviour.
+With this extension you can turn off the annoying "Bluetooth gets turned on when I disable airplane mode" behavior.
 
 ## Known limitations
 
@@ -9,7 +9,7 @@ With this extension you can turn off the annoying "Bluetooth gets turned on when
    This means when you turn on Bluetooth when in airplane mode the following happens:
    - When "Enable Wi-Fi" is enabled Wi-Fi gets enabled even tough you only wanted to toggle Bluetooth.
    - When "Enable Bluetooth" is disabled Bluetooth won't turn on. 
- - When choosing not to enable both Bluetooth and Wi-Fi airplane mode might get reactivated. Altough this behaviour (at least on my machine) is only observed the first time disabling airplane mode, since then it works perfectly well.
+ - When choosing not to enable both Bluetooth and Wi-Fi airplane mode might get reactivated. Although this behavior (at least on my machine) is only observed the first time disabling airplane mode, since then it works perfectly well.
  - This extension has no support for mobile broadband networking since I don't need this feature. If support for this is needed please let me know by opening a issue or if you are a developer you might as well create a pull request.
 
 
@@ -33,3 +33,6 @@ Installation via git is performed by cloning the repo into your local gnome-shel
 
 After cloning the repo, the extension is practically installed yet disabled. In order to enable it, find the extension titled 'Sane Airplane Mode', in the 'Extensions' application and turn it 'On'.
 You may need to restart the GNOME shell (<kbd>Alt</kbd>+<kbd>F2</kbd> and insert 'r' in the prompt) for the extension to be listed there.
+
+## Donations
+I currently don't accept donations. However if you find my work useful and want to say "Thank you!" consider starring this repository ⭐.
