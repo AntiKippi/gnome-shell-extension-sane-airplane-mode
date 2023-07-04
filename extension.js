@@ -15,6 +15,9 @@ const shellVersion = parseFloat(Config.PACKAGE_VERSION);
 let ENABLE_WIFI          = false;
 let ENABLE_BLUETOOTH     = true;
 let ENABLE_AIRPLANE_MODE = true;
+let ENABLE_DEBUG         = false;
+let APPLY_INTERVAL       = 25;
+let APPLY_COUNT          = 10;
 
 
 // Execute func once after millis milliseconds
@@ -39,7 +42,7 @@ const removeTimeout = (timeoutId) => {
 
 const SaneAirplaneMode = class SaneAirplaneMode {
     constructor() {
-        this._init().catch((e) => { log(e); });
+        this._init().catch((e) => { logError(e); });
     }
 
     async _init() {
@@ -81,7 +84,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
             },
             set airplaneModeEnabled(arg) {
                 this._sam._rfkillManager.airplaneMode = arg;
-            }
+            },
         };
         this._radioSettings._sam = this;
 
@@ -102,11 +105,26 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         this._disconnectTimeouts();
     }
 
-    _handleAirplaneModeChange() {
-        const CHECK_INTERVAL = 25;
-        const CHECK_COUNT = 10;
+    _logDebug(msg) {
+        if (ENABLE_DEBUG) {
+            log(Constants.LOG_PREFIX + msg);
+        }
+    }
 
+    _handleAirplaneModeChange() {
+        let getRadioState = () => {
+            return {
+                wifi:            this._radioSettings.wifiEnabled,
+                bluetooth:       this._radioSettings.bluetoothEnabled,
+                airplaneMode:    this._radioSettings.airplaneModeEnabled,
+                oldAirplaneMode: this._oldAirplaneMode,
+            };
+        };
+
+        this._logDebug('Begin executing handleAirplaneModeChange');
+        this._logDebug(`Current state: ${JSON.stringify(getRadioState())}`);
         if (this._skipOnce) {
+            this._logDebug('Skipping setting application once...');
             this._skipOnce = false;
         } else {
             if (!this._radioSettings.airplaneModeEnabled &&     // Airplane mode is off and
@@ -114,58 +132,53 @@ const SaneAirplaneMode = class SaneAirplaneMode {
                 this._radioSettings.bluetoothEnabled &&         // If Bluetooth is in airplane mode it can't have been disabled
                 !this._radioSettings.wifiEnabled                // When genuinely disabling airplane mode wireless_enabled is false
             ) {
+                this._logDebug('Apply user settings logic has been triggered');
 
-                // If Wi-Fi is enabled but Bluetooth isn't, airplane mode has been disabled
-                // as a side effect of Wi-Fi activation thus we don't apply our settings.
-                if (this._radioSettings.wifiEnabled && !this._radioSettings.bluetoothEnabled) {
-                    return;
-                }
+                let applySettings = () => {
+                    this._logDebug('Applying settings');
+                    this._radioSettings.wifiEnabled      = ENABLE_WIFI;
+                    this._radioSettings.bluetoothEnabled = ENABLE_BLUETOOTH;
+                    this._logDebug(`Settings are now: ${JSON.stringify(getRadioState())}`);
+                };
 
-                log("Applying settings on airplane_mode_changed");
-                this._radioSettings.wifiEnabled      = ENABLE_WIFI;
-                this._radioSettings.bluetoothEnabled = ENABLE_BLUETOOTH;
-                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+                applySettings();
 
                 /* Both Wi-Fi and Bluetooth are disabled immediately after airplane mode is disabled
-                 * and Bluetooth gets activated shortly afterwards without raising any event.
-                 *
-                 * Thus we check the settings every CHECK_INTERVAL ms and reapply them.
-                 * The function executes at least CHECK_COUNT times and then until the settings fit.
-                 * 
-                 * We execute at least CHECK_COUNT times because even if the settings might seem to have got applied
-                 * they might be overridden afterwards by the Bluetooth activation.
-                 * 
-                 * This also means that as a side effect for CHECK_INTERVAL * CHECK_COUNT seconds
-                 * the WiFi and Bluetooth settings cannot be changed.
-                 */ 
+                * and Bluetooth gets activated shortly afterwards without raising any event.
+                *
+                * Thus we check the settings every APPLY_INTERVAL ms and reapply them.
+                * The function executes at least APPLY_COUNT times and then until the settings fit.
+                *
+                * We execute at least APPLY_COUNT times because even if the settings might seem to have got applied
+                * they might be overridden afterwards by the Bluetooth activation.
+                *
+                * This also means that as a side effect for APPLY_INTERVAL * APPLY_COUNT seconds
+                * the WiFi and Bluetooth settings cannot be changed.
+                */
                 let count = 0;
                 let index = this._timeouts.push(addInterval(() => {
-                    log(`Executing interval the ${count} time...`);
-
-                    // Stop this loop when logic has been executed CHECK_COUNT times and the settings are correct
-                    if(++count > CHECK_COUNT &&
-                        this._radioSettings.wifiEnabled == ENABLE_WIFI && 
-                        this._radioSettings.bluetoothEnabled == ENABLE_BLUETOOTH
+                    // Stop this loop when logic has been executed APPLY_COUNT times and the settings are correct
+                    if (++count > APPLY_COUNT &&
+                        this._radioSettings.wifiEnabled === ENABLE_WIFI &&
+                        this._radioSettings.bluetoothEnabled === ENABLE_BLUETOOTH
                     ) {
                         // Remove our timeout
                         this._timeouts.splice(index, 1);
 
-                        log("Stopping settings interval");
+                        this._logDebug('Stopping airplaneModeDisable interval');
 
                         // Don't repeat any more
                         return false;
                     }
 
-                    log("Current state:")
-                    log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
-                    log("Applying settings...");
-                    this._radioSettings.wifiEnabled      = ENABLE_WIFI;
-                    this._radioSettings.bluetoothEnabled = ENABLE_BLUETOOTH;
-                    log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+                    this._logDebug(`Executing airplaneModeDisable interval the ${count} time`);
+                    this._logDebug(`Current state: ${JSON.stringify(getRadioState())}`);
+
+                    applySettings();
 
                     // Repeat
                     return true;
-                }, CHECK_INTERVAL)) - 1;
+                }, APPLY_INTERVAL)) - 1;
             }
         }
 
@@ -174,40 +187,45 @@ const SaneAirplaneMode = class SaneAirplaneMode {
             !this._oldAirplaneMode &&                   // it was previously off, hence it must have been enabled
             this._radioSettings.wifiEnabled             // Paradoxically if wireless_enabled is true, airplane mode was enabled by disabling Wi-Fi
         ) {
+            this._logDebug('Do not enable airplane mode when disabling WiFi logic has been triggered');
+            this._logDebug('Disabling airplane mode and the bluetooth');
+
             this._skipOnce = true;
             this._radioSettings.airplaneModeEnabled = false;
             this._radioSettings.bluetoothEnabled = false;
+
+            this._logDebug(`Settings are now: ${JSON.stringify(getRadioState())}`);
 
             // We need a timeout again here because Bluetooth gets activated shortly afterwards without any event
             // The text from the "apply settings" interval also applies with the minor difference that only the Bluetooth state is fixed
             let count = 0;
             let index = this._timeouts.push(addInterval(() => {
-                log(`Executing disable bt interval the ${count} time...`);
-
-                if(++count > CHECK_COUNT &&
-                    this._radioSettings.bluetoothEnabled == false
+                if (++count > APPLY_COUNT &&
+                    this._radioSettings.bluetoothEnabled === false
                 ) {
                     // Remove our timeout
                     this._timeouts.splice(index, 1);
 
-                    log("Stopping disable bt interval");
+                    this._logDebug('Stopping disable bt interval');
 
                     // Don't repeat any more
                     return false;
                 }
 
-                log("Current state:")
-                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
-                log("Disabling bt...");
+
+                this._logDebug(`Executing disable bt interval the ${count} time`);
+                this._logDebug(`Current state: ${JSON.stringify(getRadioState())}`);
+                this._logDebug('Disabling bluetooth');
                 this._radioSettings.bluetoothEnabled = false;
-                log(`WiFi: ${this._radioSettings.wifiEnabled}, Bluetooth: ${this._radioSettings.bluetoothEnabled}`);
+                this._logDebug(`Settings are now: ${JSON.stringify(getRadioState())}`);
 
                 // Repeat
                 return true;
-            }, CHECK_INTERVAL)) - 1;
+            }, APPLY_INTERVAL)) - 1;
         }
 
         this._oldAirplaneMode = this._radioSettings.airplaneModeEnabled;
+        this._logDebug('End executing handleAirplaneModeChange');
     }
 
     _loadSettings() {
@@ -221,6 +239,9 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         ENABLE_WIFI          = this._settings.get_boolean(Constants.Fields.ENABLE_WIFI);
         ENABLE_BLUETOOTH     = this._settings.get_boolean(Constants.Fields.ENABLE_BLUETOOTH);
         ENABLE_AIRPLANE_MODE = this._settings.get_boolean(Constants.Fields.ENABLE_AIRPLANE_MODE);
+        ENABLE_DEBUG         = this._settings.get_boolean(Constants.Fields.ENABLE_DEBUG);
+        APPLY_INTERVAL       = this._settings.get_boolean(Constants.Fields.APPLY_INTERVAL);
+        APPLY_COUNT          = this._settings.get_boolean(Constants.Fields.APPLY_COUNT);
     }
 
     _disconnectSettings() {
@@ -253,7 +274,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
                     removeTimeout(this._timeouts[i]);
                 }
             } catch (e) {
-                log(`Couldn't remove timeout: ${e}`);
+                logError(e, 'Couldn\'t remove timeout');
             }
         }
 

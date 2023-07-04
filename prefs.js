@@ -88,7 +88,26 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
 
         this.field_wifi_toggle = new Gtk.Switch();
         this.field_bluetooth_toggle = new Gtk.Switch();
-        this.field_airplane_toogle = new Gtk.Switch();
+        this.field_airplane_toggle = new Gtk.Switch();
+        this.field_debug_toggle = new Gtk.Switch({
+            halign: Gtk.Align.END,
+        });
+        this.field_interval_input = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 5,
+                upper: 1000,
+                step_increment: 5,
+                page_increment: 50,
+            }),
+        });
+        this.field_count_input = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 0,
+                upper: 1000,
+                step_increment: 1,
+                page_increment: 10,
+            }),
+        });
 
         let airplaneTitleLabel = new Gtk.Label({
             label: `<b>${_('When disabling airplane mode')}:</b>`,
@@ -96,7 +115,7 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             use_markup: true,
             visible: true,
         });
-        let wifiLabel  = new Gtk.Label({
+        let wifiLabel = new Gtk.Label({
             label: _('Enable Wi-Fi'),
             hexpand: true,
             halign: Gtk.Align.START,
@@ -112,48 +131,86 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             use_markup: true,
             visible: true,
         });
-        let enableAirplaneLabel  = new Gtk.Label({
+        let enableAirplaneLabel = new Gtk.Label({
             label: _('Enable airplane mode'),
             hexpand: true,
             halign: Gtk.Align.START,
         });
+        let applySettingsIntervalLabel = new Gtk.Label({
+            label: _('Setting application interval (in ms)'),
+            hexpand: true,
+            halign: Gtk.Align.START,
+        });
+        let applySettingsCountLabel = new Gtk.Label({
+            label: _('Setting application count'),
+            hexpand: true,
+            halign: Gtk.Align.START,
+        });
+        let debugLogLabel = new Gtk.Label({
+            label: _('Enable debug log'),
+            hexpand: true,
+            halign: Gtk.Align.START,
+        });
 
-        const addRow = ((main) => {
+        let advancedExpander = new Gtk.Expander({
+            label: `<b>${_('Advanced')}</b>`,
+            hexpand: true,
+            use_markup: true,
+        });
+
+        let advancedGrid = new Gtk.Grid({
+            margin_top: 10,
+            margin_bottom: 10,
+            margin_start: 0,
+            margin_end: 0,
+            row_spacing: 12,
+            column_spacing: 18,
+            column_homogeneous: false,
+            row_homogeneous: false,
+            hexpand: true,
+        });
+
+        advancedExpander.set_child(advancedGrid);
+
+        const addRowTemplate = (grid) => {
             let row = initialRow;
             return (label, input) => {
                 function attachWidget(widget, column, width, height) {
                     if (widget) {
-                        main.attach(widget, column, row, width, height);
+                        grid.attach(widget, column, row, width, height);
                     }
                 }
 
-                let inputWidget = input;
-
-                if (input instanceof Gtk.Switch) {
-                    inputWidget = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
-                    inputWidget.append(input);
-                }
-
                 if (label) {
-                    main.attach(label, 0, row, 1, 1);
-                    attachWidget(inputWidget, 1, 1, 1);
+                    grid.attach(label, 0, row, 1, 1);   // We already know 'label' is defined
+                    attachWidget(input, 1, 1, 1);
                 } else {
-                    attachWidget(inputWidget, 0, 2, 1);
+                    attachWidget(input, 0, 2, 1);
                 }
 
                 row++;
             };
-        })(this.main);
+        };
 
-        addRow(airplaneTitleLabel,  undefined);
-        addRow(wifiLabel,           this.field_wifi_toggle);
-        addRow(bluetoothLabel,      this.field_bluetooth_toggle);
-        addRow(wifiTitleLabel,      undefined);
-        addRow(enableAirplaneLabel, this.field_airplane_toogle);
+        this.main.addRow = addRowTemplate(this.main);
+        this.main.addRow(airplaneTitleLabel,  undefined);
+        this.main.addRow(wifiLabel,           this.field_wifi_toggle);
+        this.main.addRow(bluetoothLabel,      this.field_bluetooth_toggle);
+        this.main.addRow(wifiTitleLabel,      undefined);
+        this.main.addRow(enableAirplaneLabel, this.field_airplane_toggle);
+        this.main.addRow(undefined,           advancedExpander);
+
+        advancedGrid.addRow = addRowTemplate(advancedGrid);
+        advancedGrid.addRow(applySettingsIntervalLabel, this.field_interval_input);
+        advancedGrid.addRow(applySettingsCountLabel,    this.field_count_input);
+        advancedGrid.addRow(debugLogLabel,              this.field_debug_toggle);
 
         SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,          this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
         SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH,     this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE, this.field_airplane_toogle,  'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE, this.field_airplane_toggle,  'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_DEBUG_LOG,     this.field_debug_toggle,     'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.APPLY_INTERVAL,       this.field_interval_input,   'value',  Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.APPLY_COUNT,          this.field_count_input,      'value',  Gio.SettingsBindFlags.DEFAULT);
 
         if (gtkVersion < 4) {
             this.main.show_all();

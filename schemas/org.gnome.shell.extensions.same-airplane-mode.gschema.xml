@@ -16,5 +16,20 @@
       <summary>Enable airplane mode</summary>
       <description>If set, airplane mode will be automatically turned on when Wi-Fi is disabled.</description>
     </key>
+    <key type="b" name="enable-debug-log">
+      <default>false</default>
+      <summary>Enable the debug log</summary>
+      <description>If enabled, the extension will log some things for debugging purposes.</description>
+    </key>
+    <key type="u" name="apply-interval">
+      <default>25</default>
+      <summary>Apply settings interval (in ms)</summary>
+      <description>How much time should elapse between each apply of the setting.</description>
+    </key>
+    <key type="u" name="apply-count">
+      <default>10</default>
+      <summary>Apply settings count</summary>
+      <description>How often the settings should be applied.</description>
+    </key>
   </schema>
 </schemalist>
