@@ -1,10 +1,10 @@
 var Fields = {
-    ENABLE_WIFI          : 'enable-wifi',
-    ENABLE_BLUETOOTH     : 'enable-bluetooth',
-    ENABLE_AIRPLANE_MODE : 'enable-airplane-mode',
-    ENABLE_DEBUG_LOG     : 'enable-debug-log',
-    APPLY_INTERVAL       : 'apply-interval',
-    APPLY_COUNT          : 'apply-count',
+    ENABLE_WIFI            : 'enable-wifi',
+    ENABLE_BLUETOOTH       : 'enable-bluetooth',
+    ENABLE_AIRPLANE_MODE   : 'enable-airplane-mode',
+    ENABLE_DEBUG_LOG       : 'enable-debug-log',
+    DISABLE_RADIO_INTERVAL : 'disable-radio-interval',
+    MAX_INTERVAL_COUNT     : 'max-interval-count',
 };
 
 var SCHEMA_NAME = 'org.gnome.shell.extensions.sane-airplane-mode';

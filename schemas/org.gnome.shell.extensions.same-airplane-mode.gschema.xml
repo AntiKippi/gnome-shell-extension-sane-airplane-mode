@@ -21,15 +21,15 @@
       <summary>Enable the debug log</summary>
       <description>If enabled, the extension will log some things for debugging purposes.</description>
     </key>
-    <key type="u" name="apply-interval">
+    <key type="u" name="disable-radio-interval">
       <default>25</default>
-      <summary>Apply settings interval (in ms)</summary>
-      <description>How much time should elapse between each apply of the setting.</description>
+      <summary>Disable radio interval (in ms)</summary>
+      <description>How much time should elapse between each try disabling a radio.</description>
     </key>
-    <key type="u" name="apply-count">
-      <default>10</default>
-      <summary>Apply settings count</summary>
-      <description>How often the settings should be applied.</description>
+    <key type="u" name="max-interval-count">
+      <default>40</default>
+      <summary>Maximum disable radio interval count</summary>
+      <description>How often maximally it should be tried to disable a radio.</description>
     </key>
   </schema>
 </schemalist>

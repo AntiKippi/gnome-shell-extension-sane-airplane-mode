@@ -136,13 +136,13 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
             hexpand: true,
             halign: Gtk.Align.START,
         });
-        let applySettingsIntervalLabel = new Gtk.Label({
-            label: _('Setting application interval (in ms)'),
+        let disableRadioIntervalLabel = new Gtk.Label({
+            label: _('Disable radio interval (in ms)'),
             hexpand: true,
             halign: Gtk.Align.START,
         });
-        let applySettingsCountLabel = new Gtk.Label({
-            label: _('Setting application count'),
+        let maximumApplyCountLabel = new Gtk.Label({
+            label: _('Maximum disable radio count'),
             hexpand: true,
             halign: Gtk.Align.START,
         });
@@ -201,16 +201,16 @@ const App = GObject.registerClass(class Settings extends GObject.Object {
         this.main.addRow(undefined,           advancedExpander);
 
         advancedGrid.addRow = addRowTemplate(advancedGrid);
-        advancedGrid.addRow(applySettingsIntervalLabel, this.field_interval_input);
-        advancedGrid.addRow(applySettingsCountLabel,    this.field_count_input);
-        advancedGrid.addRow(debugLogLabel,              this.field_debug_toggle);
+        advancedGrid.addRow(disableRadioIntervalLabel, this.field_interval_input);
+        advancedGrid.addRow(maximumApplyCountLabel,    this.field_count_input);
+        advancedGrid.addRow(debugLogLabel,             this.field_debug_toggle);
 
-        SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,          this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH,     this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE, this.field_airplane_toggle,  'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.ENABLE_DEBUG_LOG,     this.field_debug_toggle,     'active', Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.APPLY_INTERVAL,       this.field_interval_input,   'value',  Gio.SettingsBindFlags.DEFAULT);
-        SettingsSchema.bind(Constants.Fields.APPLY_COUNT,          this.field_count_input,      'value',  Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_WIFI,            this.field_wifi_toggle,      'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_BLUETOOTH,       this.field_bluetooth_toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_AIRPLANE_MODE,   this.field_airplane_toggle,  'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.ENABLE_DEBUG_LOG,       this.field_debug_toggle,     'active', Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.DISABLE_RADIO_INTERVAL, this.field_interval_input,   'value',  Gio.SettingsBindFlags.DEFAULT);
+        SettingsSchema.bind(Constants.Fields.MAX_INTERVAL_COUNT,     this.field_count_input,      'value',  Gio.SettingsBindFlags.DEFAULT);
 
         if (gtkVersion < 4) {
             this.main.show_all();
