@@ -5,8 +5,6 @@ import {Extension, gettext as _} from 'resource:////org/gnome/shell/extensions/e
 
 import * as Constants from './constants.js';
 
-import * as Config from 'resource:///org/gnome/shell/misc/config.js';
-
 let ENABLE_WIFI            = false;
 let ENABLE_BLUETOOTH       = true;
 let ENABLE_AIRPLANE_MODE   = true;
@@ -40,12 +38,12 @@ export default class SaneAirplaneMode extends Extension {
         super(metadata);
     }
 
-    enable() {
+    async _init() {
         this._loadSettings();
 
         this._timeouts = [];
 
-        this._client = NM.Client.new(null);
+        this._client = await NM.Client.new_async(null);
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
@@ -92,6 +90,10 @@ export default class SaneAirplaneMode extends Extension {
         this._airplaneHandlerId = this._rfkillManager.connect(signalName, this._handleAirplaneModeChange.bind(this));
     }
 
+    enable() {
+        this._init().catch((e) => { logError(e); });
+    }
+
     disable() {
         this._disconnectSettings();
         this._disconnectAirplaneHandler();
@@ -104,7 +106,7 @@ export default class SaneAirplaneMode extends Extension {
     }
 
     _logDebug(msg) {
-        if (Contants.ENABLE_DEBUG_LOG) {
+        if (ENABLE_DEBUG_LOG) {
             log(Constants.LOG_PREFIX + msg);
         }
     }

@@ -1,6 +1,5 @@
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
-import GObject from 'gi://GObject';
 
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -38,7 +37,7 @@ export default class SaneAirplaneModePreferences extends ExtensionPreferences {
             title: _('Advanced'),
         });
         const advancedExpander = new Adw.ExpanderRow({
-            title: _('Advanded'),
+            title: _('Advanced settings'),
         });
         const enableDebugLogRow = new Adw.SwitchRow({
             title: _('Enable debug log'),
