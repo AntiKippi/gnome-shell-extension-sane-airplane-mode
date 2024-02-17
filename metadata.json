@@ -1,16 +1,12 @@
 {
     "version": 13,
     "shell-version": [
-        "3.36",
-        "3.38",
-        "40",
-        "41",
-        "42",
-        "43",
-        "44"
+        "45"
     ],
     "uuid": "sane-airplane-mode@kippi",
     "name": "Sane Airplane Mode",
     "description": "Make airplane mode sane again! This extension gives you better control over the airplane mode and lets you turn off the annoying \"Bluetooth gets turned on when I disable airplane mode\" behaviour.",
-    "url": "https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode"
+    "url": "https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode",
+    "gettext-domain": "sane-airplane-mode",
+    "settings-schema": "org.gnome.shell.extensions.sane-airplane-mode"
 }

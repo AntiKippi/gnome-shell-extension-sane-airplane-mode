@@ -1,4 +1,4 @@
-var Fields = {
+export const Fields = {
     ENABLE_WIFI            : 'enable-wifi',
     ENABLE_BLUETOOTH       : 'enable-bluetooth',
     ENABLE_AIRPLANE_MODE   : 'enable-airplane-mode',
@@ -7,8 +7,8 @@ var Fields = {
     MAX_INTERVAL_COUNT     : 'max-interval-count',
 };
 
-var SCHEMA_NAME = 'org.gnome.shell.extensions.sane-airplane-mode';
+export const GITHUB_URL = 'https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode';
 
-var GITHUB_URL = 'https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode';
+export const UUID = 'sane-airplane-mode@kippi';
 
-var LOG_PREFIX = 'Sane Airplane Mode: ';
+export const LOG_PREFIX = 'Sane Airplane Mode: ';
