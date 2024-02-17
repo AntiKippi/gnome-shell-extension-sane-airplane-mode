@@ -1,16 +1,11 @@
-const GLib           = imports.gi.GLib;
-const NM             = imports.gi.NM;
-const Rfkill         = imports.ui.status.rfkill;
-const ExtensionUtils = imports.misc.extensionUtils;
+import GLib from 'gi://GLib';
+import NM from 'gi://NM';
+import * as Rfkill from 'resource:///org/gnome/shell/ui/status/rfkill.js';
+import {Extension, gettext as _} from 'resource:////org/gnome/shell/extensions/extension.js';
 
-const Gettext = imports.gettext;
-const _ = Gettext.domain('sane-airplane-mode').gettext;
+import * as Constants from './constants.js';
 
-const Constants = ExtensionUtils.getCurrentExtension().imports.constants;
-
-const Config = imports.misc.config;
-const shellVersion = parseFloat(Config.PACKAGE_VERSION);
-
+import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 
 let ENABLE_WIFI            = false;
 let ENABLE_BLUETOOTH       = true;
@@ -40,23 +35,17 @@ const removeTimeout = (timeoutId) => {
 };
 
 
-const SaneAirplaneMode = class SaneAirplaneMode {
-    constructor() {
-        this._init().catch((e) => { logError(e); });
+export default class SaneAirplaneMode extends Extension {
+    constructor(metadata) {
+        super(metadata);
     }
 
-    async _init() {
+    enable() {
         this._loadSettings();
 
         this._timeouts = [];
 
-        // Create a NetworkManager client
-        // This must be async, if we make this call syncronously wireless_enabled isn't true when airplane mode is enabled by disabling Wi-Fi
-        if (shellVersion > 3.36) {
-            this._client = await NM.Client.new_async(null);
-        } else {
-            this._client = NM.Client.new(null);
-        }
+        this._client = NM.Client.new(null);
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
@@ -99,18 +88,23 @@ const SaneAirplaneMode = class SaneAirplaneMode {
         this._running = {};
 
         // Connect to the "airplane mode changed" signal
-        const signalName = (shellVersion < 43)? 'airplane-mode-changed' : 'notify::airplane-mode';
+        const signalName = 'notify::airplane-mode';
         this._airplaneHandlerId = this._rfkillManager.connect(signalName, this._handleAirplaneModeChange.bind(this));
     }
 
-    destroy() {
+    disable() {
         this._disconnectSettings();
         this._disconnectAirplaneHandler();
         this._disconnectTimeouts();
+        this._client = null;
+    }
+
+    destroy() {
+        disable();
     }
 
     _logDebug(msg) {
-        if (ENABLE_DEBUG_LOG) {
+        if (Contants.ENABLE_DEBUG_LOG) {
             log(Constants.LOG_PREFIX + msg);
         }
     }
@@ -241,7 +235,7 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     }
 
     _loadSettings() {
-        this._settings = ExtensionUtils.getSettings(Constants.SCHEMA_NAME);
+        this._settings = Extension.lookupByUUID(Constants.UUID).getSettings();
         this._settingsChangedId = this._settings.connect('changed', this._fetchSettings.bind(this));
 
         this._fetchSettings();
@@ -294,14 +288,3 @@ const SaneAirplaneMode = class SaneAirplaneMode {
     }
 };
 
-let saneAirplaneMode;
-function enable() {
-    saneAirplaneMode = new SaneAirplaneMode();
-}
-
-function disable() {
-    if (saneAirplaneMode) {
-        saneAirplaneMode.destroy();
-        saneAirplaneMode = null;
-    }
-}
