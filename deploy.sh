@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-FILES=("schemas/" "constants.js" "extension.js" "metadata.json" "prefs.js")
-EXTNAME="sane-airplane-mode@kippi"
-ZIPNAME="$EXTNAME.zip"
-EXTDIR=~/.local/share/gnome-shell/extensions/$EXTNAME/
+FILES=('schemas/' 'constants.js' 'extension.js' 'metadata.json' 'prefs.js')
+EXTNAME='sane-airplane-mode@kippi'
+ZIPNAME="${EXTNAME}.zip"
+EXTDIR=~"/.local/share/gnome-shell/extensions/${EXTNAME}/"
 
 print_help_exit() {
     echo "USAGE: $(basename "$0") -l|--local|-z|--zip"
-    exit $1
+    exit "$1"
 }
 
 case "$1" in
@@ -15,10 +15,10 @@ case "$1" in
         print_help_exit 0
         ;;
     -l|--local)
-        cp -vr ${FILES[@]} $EXTDIR
+        cp -vr "${FILES[@]}" "${EXTDIR}"
         ;;
     -z|--zip)
-        zip -r "$ZIPNAME" ${FILES[@]}
+        zip -r "${ZIPNAME}" "${FILES[@]}"
         ;;
     *)
         print_help_exit 2;
