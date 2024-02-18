@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "shell-version": [
+        "45"
+    ],
+    "uuid": "sane-airplane-mode-tests@kippi",
+    "name": "Sane Airplane Mode Tests",
+    "description": "Test suite for the Sane Airplane Mode extension.",
+    "url": "https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode",
+    "settings-schema": "org.gnome.shell.extensions.sane-airplane-mode-tests"
+}

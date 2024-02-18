@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="nls1729-extensions">
+  <schema path="/org/gnome/shell/extensions/sane-airplane-mode-tests/" id="org.gnome.shell.extensions.sane-airplane-mode-tests">
+    <key type="s" name="print-file">
+      <default>"/tmp/sam-tests/test.log"</default>
+      <summary>Test Output File</summary>
+      <description>The path to the file in which the test output is written. Must be an absolute path.</description>
+    </key>
+    <key type="u" name="radio-apply-delay">
+      <default>1000</default>
+      <summary>Radio Apply Delay</summary>
+      <description>The time (in milliseconds) to wait between application of radio settings.</description>
+    </key>
+    <key type="b" name="start-tests">
+      <default>false</default>
+      <summary>Start Tests</summary>
+      <description>Run the test suites. After completion this key will return to false, so "true" means running and "false" means done.</description>
+    </key>
+    <key type="b" name="test-disable-airplane-mode">
+      <default>true</default>
+      <summary>disable-airplane-mode</summary>
+      <description>Enable the "disable-airplane-mode" test suite.</description>
+    </key>
+  </schema>
+</schemalist>
