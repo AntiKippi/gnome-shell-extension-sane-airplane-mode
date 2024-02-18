@@ -23,11 +23,13 @@
     </key>
     <key type="u" name="disable-radio-interval">
       <default>25</default>
+      <range min="5" max="1000"/>
       <summary>Disable radio interval (in ms)</summary>
       <description>How much time should elapse between each try disabling a radio.</description>
     </key>
     <key type="u" name="max-interval-count">
       <default>40</default>
+      <range min="0" max="1000"/>
       <summary>Maximum disable radio interval count</summary>
       <description>How often maximally it should be tried to disable a radio.</description>
     </key>
