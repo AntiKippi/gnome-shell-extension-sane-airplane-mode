@@ -34,45 +34,40 @@ const removeTimeout = (timeoutId) => {
 
 
 export default class SaneAirplaneMode extends Extension {
-    constructor(metadata) {
-        super(metadata);
-    }
-
     async _init() {
         this._loadSettings();
 
         this._timeouts = [];
 
+        // Create a NetworkManager client
+        // This must be async, if we make this call syncronously wireless_enabled isn't true when airplane mode is enabled by disabling Wi-Fi
         this._client = await NM.Client.new_async(null);
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
 
         // Initialize management object for WiFi, Bluetooth and airplane mode settings
-        // We need to use _this, which is set to the current SaneAirplaneMode instance
-        // because "this" now refers to the _radioSettings object
-        const _this = this;
         this._radioSettings = {
             getBluetoothEnabled: (function() {
                 return !this._rfkillManager._proxy.BluetoothAirplaneMode;
-            }).bind(_this),
+            }).bind(this),
             setBluetoothEnabled: (function(arg) {
                 this._rfkillManager._proxy.BluetoothAirplaneMode = !arg;
-            }).bind(_this),
+            }).bind(this),
 
             getWifiEnabled: (function() {
                 return this._client.wireless_enabled;
-            }).bind(_this),
+            }).bind(this),
             setWifiEnabled: (function(arg) {
                 this._client.wireless_enabled = arg;
-            }).bind(_this),
+            }).bind(this),
 
             getAirplaneModeEnabled: (function() {
                 return this._rfkillManager.airplaneMode;
-            }).bind(_this),
+            }).bind(this),
             setAirplaneModeEnabled: (function(arg) {
                 this._rfkillManager.airplaneMode = arg;
-            }).bind(_this),
+            }).bind(this),
         };
 
         // Initialize oldAirplaneMode
@@ -99,10 +94,6 @@ export default class SaneAirplaneMode extends Extension {
         this._disconnectAirplaneHandler();
         this._disconnectTimeouts();
         this._client = null;
-    }
-
-    destroy() {
-        disable();
     }
 
     _logDebug(msg) {
@@ -237,7 +228,7 @@ export default class SaneAirplaneMode extends Extension {
     }
 
     _loadSettings() {
-        this._settings = Extension.lookupByUUID(Constants.UUID).getSettings();
+        this._settings = this.getSettings();
         this._settingsChangedId = this._settings.connect('changed', this._fetchSettings.bind(this));
 
         this._fetchSettings();
@@ -259,6 +250,7 @@ export default class SaneAirplaneMode extends Extension {
 
         this._settings.disconnect(this._settingsChangedId);
         this._settingsChangedId = null;
+        this._settings = null;
     }
 
     _disconnectAirplaneHandler() {
@@ -289,4 +281,3 @@ export default class SaneAirplaneMode extends Extension {
         this._timeouts = null;
     }
 };
-

@@ -20,6 +20,7 @@ export default class SaneAirplaneModePreferences extends ExtensionPreferences {
         const bluetoothRow = new Adw.SwitchRow({
             title: _('Enable Bluetooth'),
         });
+
         airplaneGroup.add(wifiRow);
         airplaneGroup.add(bluetoothRow);
         page.add(airplaneGroup);
@@ -30,6 +31,7 @@ export default class SaneAirplaneModePreferences extends ExtensionPreferences {
         const enableAirplaneRow  = new Adw.SwitchRow({
             title: _('Enable airplane mode'),
         });
+
         wifiGroup.add(enableAirplaneRow);
         page.add(wifiGroup);
 
@@ -42,10 +44,13 @@ export default class SaneAirplaneModePreferences extends ExtensionPreferences {
         const enableDebugLogRow = new Adw.SwitchRow({
             title: _('Enable debug log'),
         });
-        const disableRadioIntervalRow = Adw.SpinRow.new_with_range(1, 60000, 1);
+
+        const disableRadioIntervalRow = Adw.SpinRow.new_with_range(5, 1000, 5);
         disableRadioIntervalRow.set_title(_('Disable radio interval (in ms)'));
-        const maxIntervalCountRow = Adw.SpinRow.new_with_range(1, 1000, 1);
+
+        const maxIntervalCountRow = Adw.SpinRow.new_with_range(0, 1000, 1);
         maxIntervalCountRow.set_title(_('Maximum disable radio count'));
+        
         advancedExpander.add_row(enableDebugLogRow);
         advancedExpander.add_row(disableRadioIntervalRow);
         advancedExpander.add_row(maxIntervalCountRow);
