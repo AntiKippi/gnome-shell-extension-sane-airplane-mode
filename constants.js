@@ -7,8 +7,4 @@ export const Fields = {
     MAX_INTERVAL_COUNT:     'max-interval-count',
 };
 
-export const GITHUB_URL = 'https://github.com/AntiKippi/gnome-shell-extension-sane-airplane-mode';
-
-export const UUID = 'sane-airplane-mode@kippi';
-
 export const LOG_PREFIX = 'Sane Airplane Mode: ';
