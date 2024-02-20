@@ -19,7 +19,17 @@
     <key type="b" name="test-disable-airplane-mode">
       <default>true</default>
       <summary>disable-airplane-mode</summary>
-      <description>Enable the "disable-airplane-mode" test suite.</description>
+      <description>Enable the "disable-airplane-mode" test.</description>
+    </key>
+    <key type="b" name="test-disable-wifi-last-radio">
+      <default>true</default>
+      <summary>disable-wifi-last-radio</summary>
+      <description>Enable the "disable-wifi-last-radio" test.</description>
+    </key>
+    <key type="b" name="test-disable-bt-last-radio">
+      <default>false</default>
+      <summary>disable-bt-last-radio</summary>
+      <description>Enable the "disable-bt-last-radio" test.</description>
     </key>
   </schema>
 </schemalist>
