@@ -41,7 +41,8 @@ export default class SaneAirplaneMode extends Extension {
 
         // Create a NetworkManager client
         // This must be async, if we make this call syncronously wireless_enabled isn't true when airplane mode is enabled by disabling Wi-Fi
-        this._client = await NM.Client.new_async(null);
+        this._client = null;
+        NM.Client.new_async(null, this._on_new_client);
 
         // Get a RfkillManager instance
         this._rfkillManager = Rfkill.getRfkillManager();
@@ -56,14 +57,17 @@ export default class SaneAirplaneMode extends Extension {
             }).bind(this),
 
             getWifiEnabled: (function() {
-                return this._client.wireless_enabled;
+                return this._client !== null ? this._client.wireless_enabled : false;
             }).bind(this),
             setWifiEnabled: (function(arg) {
-                this._client.wireless_enabled = arg;
+                if (this._client !== null)
+                    this._client.wireless_enabled = arg;
             }).bind(this),
 
             getAirplaneModeEnabled: (function() {
-                return this._rfkillManager.airplaneMode;
+                // FIXME: why null is returned? Is the following assumption safe?
+                let ret = this._rfkillManager.airplaneMode;
+                return ret === null ? true : ret;
             }).bind(this),
             setAirplaneModeEnabled: (function(arg) {
                 this._rfkillManager.airplaneMode = arg;
@@ -94,6 +98,10 @@ export default class SaneAirplaneMode extends Extension {
         this._disconnectAirplaneHandler();
         this._disconnectTimeouts();
         this._client = null;
+    }
+
+    _on_new_client(source_object, res) {
+        source_object._client = NM.Client.new_finish(res);
     }
 
     _logDebug(msg) {
