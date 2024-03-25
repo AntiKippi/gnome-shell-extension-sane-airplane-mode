@@ -1,8 +1,9 @@
 {
-    "version": 13,
-    "version-name": "2.0.0",
+    "version": 14,
+    "version-name": "2.0.1",
     "shell-version": [
-        "45"
+        "45",
+        "46"
     ],
     "uuid": "sane-airplane-mode@kippi",
     "name": "Sane Airplane Mode",

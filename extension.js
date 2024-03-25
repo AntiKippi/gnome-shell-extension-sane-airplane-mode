@@ -118,7 +118,7 @@ export default class SaneAirplaneMode extends Extension {
          * Thus, if user doesn't want to enable a radio (ENABLE_<RADIO> is false)
          * we wait until it gets activated and then disable it.
          *
-         * This means that if the system doesn't enable the radio it will be erroneously disabled
+         * This means that if the system doesn't enable the radio it might be erroneously disabled
          * the first time the user activates it in MAX_INTERVAL_COUNT * DISABLE_RADIO_INTERVAL ms if ENABLE_<RADIO> is false
          */
         const createDisableRadioInterval = (radioName, getRadio, setRadio) => {

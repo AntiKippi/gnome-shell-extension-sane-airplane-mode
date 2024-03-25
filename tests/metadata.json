@@ -1,7 +1,8 @@
 {
     "version": 1,
     "shell-version": [
-        "45"
+        "45",
+        "46"
     ],
     "uuid": "sane-airplane-mode-tests@kippi",
     "name": "Sane Airplane Mode Tests",
