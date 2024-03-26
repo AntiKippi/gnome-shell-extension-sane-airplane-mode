@@ -1,9 +1,12 @@
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 import NM from 'gi://NM';
 import * as Rfkill from 'resource:///org/gnome/shell/ui/status/rfkill.js';
 import {Extension, gettext as _} from 'resource:////org/gnome/shell/extensions/extension.js';
 
 import * as Constants from './constants.js';
+
+Gio._promisify(NM.Client, 'new_async');
 
 let ENABLE_WIFI            = false;
 let ENABLE_BLUETOOTH       = true;
